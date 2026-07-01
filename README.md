@@ -49,7 +49,13 @@ AWS Provider
 
 ```hcl
 module "vpc_endpoint_subnet_association" {
-  source = "git::https://github.com/PlatformStackPulse/tf-atom-vpc-endpoint-subnet-association-aws.git?ref=v1.1.0"
+  source = "git::https://github.com/PlatformStackPulse/tf-atom-vpc-endpoint-subnet-association-aws.git?ref=v1.0.0"
+
+  # Required
+  vpc_endpoint_id = "vpce-0123456789abcdef0"
+  subnet_id       = "subnet-0123456789abcdef0"
+
+  # tf-label context (naming / tagging)
   context = module.this.context
 }
 ```
@@ -113,3 +119,23 @@ module "vpc_endpoint_subnet_association" {
 | <a name="output_association_id"></a> [association\_id](#output\_association\_id) | The ID of the VPC Endpoint Subnet Association. |
 | <a name="output_enabled"></a> [enabled](#output\_enabled) | Whether the module is enabled. |
 <!-- END_TF_DOCS -->
+
+## Tests
+
+Unit tests use a mocked AWS provider (`mock_provider "aws" {}`) so no real AWS
+calls or credentials are required. They assert on plan-known values only — the
+`enabled` flag, the planned resource count, and input pass-throughs — because
+computed attributes (the association id) are unknown under a mock provider.
+
+```bash
+# Unit tests (mocked provider, no AWS credentials)
+terraform init -backend=false
+terraform test -test-directory=tests/unit
+
+# Or via the Makefile
+make test-unit
+```
+
+Integration tests (real AWS, requires credentials) live under
+`tests/integration/` and run with `terraform test -test-directory=tests/integration`
+(`make test-integration`).
